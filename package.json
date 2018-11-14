@@ -1,0 +1,15 @@
+{
+  "name": "swagger-express-mid-example",
+  "version": "1.0.0",
+  "description": "example app creating mock out of swagger spec using swagger-express-middleware",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "swagger-express-middleware": "^1.1.1"
+  }
+}
