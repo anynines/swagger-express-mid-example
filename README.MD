@@ -1,19 +1,18 @@
-# swagger-express-mid-example
+# BFF Mock 2.0
 
-This repo contains an example application which makes use of the _swagger-express-mid-example_ npm module to create a mock server based on a swagger specification.
+> Mock BFF app using the swagger specification as a basis
 
-# Simple Mocks
+## Getting started
+### Prerequisites
+* [Docker](https://www.docker.com/get-started)
+* access to spec file(s)
 
-* responds according to the examples in the _spec.yaml_ 
-* simply run with `node server-simple.js`
-* endpoints are available under `localhost:8000/<endpoint>` according to the _spec.yaml_
+### installation
+```shell
+$> # build docker image, replace `<version>` with current dev version or other tag
+$> docker build -t bff-mock-2:<version>
+$> # run the app in detach mode; replace `<version>` with image's one.
+$> docker run -p 8000:8000 -d bff-mock-2:<version>
+```
 
-
-# Advanced mocks
-
-* responds according to the examples in the _spec.yaml_
-* can be overwritten to have different behaviour
-* can utilize im memory database
-* simply run with `node server-advanced.js`
-* endpoints are available under `localhost:8000/<endpoint>` according to the _spec.yaml_
-* example on how to override responses from swagger spec can be found starting at line 39 inside the _server-advanced.js_ file
+The image will look after the `spec.yaml` file and create the routes accordingly.
