@@ -16,4 +16,4 @@ RUN yarn
 ADD . /usr/src/app
 
 EXPOSE 8000
-CMD [ "node", "server-advanced.js" ]
+CMD [ "yarn", "start" ]
