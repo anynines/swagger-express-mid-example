@@ -8,6 +8,7 @@ coverage/
 
 todo*
 old.*
+.old.*
 .env
 
 # MongoDB folder
