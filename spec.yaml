@@ -1,2974 +1,337 @@
 swagger: "2.0"
-# TODO: Change to CRUD naming
 info:
-  description: "BFF API for Rising Stars Reference App"
-  version: "1.0.0"
-  title: "BFF API"
-host: "bff-stable.westeurope.cloudapp.azure.com"
-basePath: "/v1"
-schemes:
-- "https"
-securityDefinitions:
-  APIKeyHeader:
-    type: apiKey
-    in: header
-    name: Authorization
-paths:
-  /assistancemail:
-    post:
-      tags:
-      - assistancemail
-      summary: Sends an email with the relevant information introduced by the driver.
-      consumes:
-      - application/json
-      parameters:
-      - name: body
-        in: body
-        required: true
-        schema:
-          $ref: "#/definitions/AssistanceMailRequest"
-      responses:
-        200:
-          description: Email sent.
-        400:
-          description: Bad Request
-          schema:
-            $ref: "#/definitions/InvalidFormError"
-        500:
-          description: Internal Server Error
-        502:
-          description: Dependency Failure. Bad Gateway
-  /rifability/{FinOrVin}:
-    get:
-      tags:
-      - rif
-      summary: Returns a boolean which indicates if a vehicle is RIF-able.
-      security:
-        - APIKeyHeader: []
-      operationId: getRIFability
-      produces:
-      - application/json
-      parameters:
-      - name: FinOrVin
-        in: path
-        required: true
-        type: string
-      responses:
-        200:
-          description: OK
-          schema:
-            $ref: "#/definitions/rifability"
-        400:
-          description: Bad Request
-        404:
-          description: The FinOrVin was not found
-        500:
-          description: Internal Server Error
-        502:
-          description: Bad Gateway. It was not possible to check if the vehicle has RIF ability.
-  /outlets:
-    post:
-      tags:
-      - outlet
-      summary: Look up outlets
-      operationId: getOutlets
-      produces:
-      - application/json
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "getOutletsBody"
-        in: "body"
-        required: true
-        schema:
-          $ref: "#/definitions/getOutletsBody"
-      responses:
-        200:
-          description: OK. If nothing was found matching your query an empty outlets[] array is returned.
-          schema:
-            $ref: "#/definitions/Outlets"
-        400:
-          description: |
-            Validation error! Invalid search parameters - for details
-            see the response body.
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: Internal server error
-        502:
-          description: Bad Gateway
+  version: 1.0.0
+  title: Swagger petstore
+  description: A sample API that demonstrates Swagger-Express-Middleware features
 
-  /login:
-    post:
-      summary: "Starts a login process"
-      tags:
-      - login
-      operationId: "login"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "body"
-        in: "body"
-        description: "login data"
-        required: true
-        schema:
-          $ref: '#/definitions/LoginData'
-      responses:
-        200:
-          description: "Successfully started the login process, (sms / email) is sent"
-          schema:
-            $ref: "#/definitions/LoginResponse"
-        400:
-          description: "Bad request"
-        429:
-          description: "Too Many Requests"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Gateway error (some dependent service failed)"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-  /user:
-    post:
-      summary: "Creates a new user"
-      operationId: "createUser"
-      tags:
-      - user
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "body"
-        in: "body"
-        description: "Data to create new user"
-        required: true
-        schema:
-          $ref: '#/definitions/CreateUserDataRequest'
-      produces:
-      - "application/json"
-      responses:
-        200:
-          description: "Sucessfully created user"
-          schema:
-            $ref: "#/definitions/CreateUserDataResponse"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/PostUserError"
-        401:
-          description: "Unauthorized"
-        429:
-          description: "Too Many Requests"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
+consumes:
+  - application/json
+produces:
+  - application/json
 
-  /user/{deprecatedCiamID}:
-    get:
-      summary: "Gets the data of a user"
-      description: "Gets the data of a user"
-      operationId: "getUserDataById"
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "user"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "CIAM ID of the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: '#/definitions/UserData'
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Not Found
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-    put:
-      summary: "Puts the data of a user"
-      description: >
-        Updates user information for the given ciamId. This call is a partial user
-        profile update and only processes the request payload fields. All other fields
-        will be ignored. To delete a specific attribute, an *empty* value has to be set.
-        <br>
-        <br>
-        __NOTES:__
-
-        <ul>
-          <li>If locale & addressRepresentationType are set, then a formatted address for
-              the user is generated and returned. Both fields need to be set together. If
-              only one field is provided an error is thrown. The formatted address is
-              generated by a backend system. In the case that there is a problem while
-              calling the backend system, no formatted address is returned.
-          </li>
-          <li>If the user moves to another country, the service dealer preference
-              and the registration country of all assigned vehicles will be removed.
-          </li>
-        </ul>
-      operationId: "putUserDataById"
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "user"
-      produces:
-      - "application/json"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "CIAM ID of the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: body
-        in: body
-        description: "All properties of a user"
-        required: true
-        schema:
-          $ref: '#/definitions/UpdateUserRequestBody'
-      - name: "X-Locale"
-        in: "header"
-        description: "specifies for which locale the address should be formatted. If set X-AddressRepresentationType must be set as well."
-        required: false
-        type: "string"
-      - name: "X-AddressRepresentationType"
-        in: "header"
-        description: "specifies in which form (LONG or SHORT) the address should beformatted. If set X-Locale must be set as well."
-        required: false
-        type: "string"
-        enum:
-        - "SHORT"
-        - "LONG"
-      - name: "X-MarketCountryCode"
-        in: "header"
-        description: "required header for specifying the country code (ISO 3166 ALPHA2)."
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: '#/definitions/UserResponseBody'
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        404:
-          description: Not Found
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        503:
-          description: "Service Unavailable"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-    delete:
-      summary: "Deletes a user"
-      description: "Deletes the user with the given ciam id"
-      operationId: "deleteUserById"
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "user"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "CIAM ID of the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "X-MarketCountryCode"
-        in: "header"
-        description: "required header for specifying the country code (ISO 3166 ALPHA2)."
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-        401:
-          description: "Unauthorized"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        503:
-          description: "Service Unavailable"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-
-  /user/{deprecatedCiamID}/vehicleimages:
-    get:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "user"
-      description: "Returns URLs pointing to images of the users vehicles."
-      operationId: "getVehicleImagesForUser"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "CIAM ID of the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "imageKeys"
-        description: "One or more combinations of perspective and imageType as a comma separated String list e.g. 'BE020-A4,BE090-A27,BI1-A4'. Applies to all requested vehicle images of the user."
-        in: "query"
-        type: "string"
-        required: true
-      - name: "imageTypes"
-        description: "One or more values of imageTypes as a comma separated String list e.g. 'A24,A34'. Applies to all requested vehicle images of the user."
-        in: "query"
-        required: false
-        type: "string"
-      - name: "roofOpen"
-        in: "query"
-        description: "If true, the roof will be shown in an open state. Available only for convertibles."
-        required: false
-        type: "boolean"
-      - name: "doorsOpen"
-        in: "query"
-        description: "If true, the doors of the vehicle will be shown in open state. Currently only Available for vehicles with gullwing doors."
-        required: false
-        type: "boolean"
-      - name: "centered"
-        in: "query"
-        description: "If true, the vehicle will be positioned in the middle of the image. Currently only static images are affected."
-        required: false
-        type: "boolean"
-      - name: "night"
-        in: "query"
-        description: "If true, the vehicle's headlights are turned on in combination with a slightly darker background."
-        required: false
-        type: "boolean"
-      - name: "background"
-        description: "If no value is provided a default will be used. In case of an invalid or unknown value an error is returned."
-        in: "query"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response"
-          schema:
-            $ref: "#/definitions/UserVehicleImagesResponse"
-        400:
-          description: "One of the provided parameters was invalid. Inspect the error object in the response for further information."
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-
-  /user/{deprecatedCiamID}/profilepicture:
-    put:
-      tags:
-      - "user"
-      summary: "Updates the profile picture of a user"
-      description: >
-        Creates or update the profile picture for jpeg, jpg or png images.
-        The supported image formats are image/jpeg, image/jpg and image/png. The
-        file size is configurable in CPD.
-      operationId: "putUserProfilePictureById"
-      security:
-      - APIKeyHeader: []
-      consumes:
-      - "image/jpeg"
-      - "image/jpg"
-      - "image/png"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "CIAM ID of the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - in: "body"
-        name: "image"
-        description: "the profile picture to be set. Allowed formats: jpeg, jpg, png"
-        required: true
-        schema:
-          $ref: "#/definitions/InputStream"
-      responses:
-        200:
-          description: "The profile picture was updated."
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        413:
-          description: "Request entity too large"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        503:
-          description: "Service Unavailable"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-    get:
-      tags:
-      - "user"
-      summary: "Gets the profile picture of a user"
-      description: >
-        Gets the profile picture of a user with the given ciam id
-      operationId: "getUserProfilePictureById"
-      security:
-      - APIKeyHeader: []
-      produces:
-      - "application/json"
-      - "image/jpeg"
-      - "image/jpg"
-      - "image/png"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "CIAM ID of the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "The profile picture."
-          schema:
-            $ref: "#/definitions/OutputStream"
-        400:
-          description: "Bad Request"
-          headers:
-            Content-Type:
-              type: string
-              description: "application/json"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: Unauthorized
-          headers:
-            Content-Type:
-              type: string
-              description: "application/json"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        404:
-          description: "Not Found"
-          headers:
-            Content-Type:
-              type: string
-              description: "application/json"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          headers:
-            Content-Type:
-              type: string
-              description: "application/json"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: Gateway error (some dependent service failed)
-          headers:
-            Content-Type:
-              type: string
-              description: "application/json"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-  /user/{deprecatedCiamID}/pin:
-    put:
-      tags:
-      - "user"
-      security:
-      - APIKeyHeader: []
-      summary: "Change the pin for a given user (CiamId)"
-      operationId: "updateUserPin"
-      produces:
-        - "application/json"
-      consumes:
-        - "application/json"
-      parameters:
-        - name: "userPinChangeRequestBody"
-          in: "body"
-          required: true
-          description: "The UserPin change request body containing the current and requested pin."
-          schema:
-            $ref: "#/definitions/UserPinChangeRequestBody"
-        - name: "deprecatedCiamID"
-          in: "path"
-          description: "The CiamId to identify the user. This field is ignored. The ciamid is taken from the jwt."
-          required: true
-          type: "string"
-        - name: "X-TrackingId"
-          in: "header"
-          description: "The tracking id"
-          type: "string"
-          required: true
-      responses:
-        204:
-          description: "No content."
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/PostUserError"
-        401:
-          description: "Unauthorized"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-    post:
-      tags:
-        - "user"
-      security:
-        - APIKeyHeader: []
-      summary: "Set the pin for a given user (CiamId)"
-      operationId: "createUserPin"
-      produces:
-        - "application/json"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "userPinCreateRequestBody"
-        in: "body"
-        required: true
-        description: "The UserPin create request body containing the requested pin."
-        schema:
-          $ref: "#/definitions/UserPinCreateRequestBody"
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The CiamId to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id."
-        type: "string"
-        required: true
-      responses:
-        204:
-          description: "No content."
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/PostUserError"
-        401:
-          description: "Unauthorized"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-    delete:
-      tags:
-      - "user"
-      security:
-      - APIKeyHeader: []
-      summary: "Delete the pin for a given user (CiamId)"
-      operationId: "deleteUserPin"
-      produces:
-      - "application/json"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "currentPin"
-        in: "query"
-        required: true
-        description: "The user's current pin before deletion."
-        type: string
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The CiamId to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id."
-        type: "string"
-        required: true
-      responses:
-        204:
-          description: "No content."
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/PostUserError"
-        401:
-          description: "Unauthorized"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-  /user/{deprecatedCiamID}/agreement:
-    get:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "useragreement"
-      summary: "Get the user agreements for a given user (CiamId)"
-      operationId: "getUserAgreements"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The ciam id to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "locale"
-        in: "query"
-        description: "This field specifies in which locale the localized texts of the answer shall be delivered. Format [ISO 639-1]-[ISO 3166 ALPHA2]. Valid examples: de-DE, zh-CN."
-        pattern: "^[a-z]{2,2}-[A-Z]{2,2}$"
-        required: true
-        type: "string"
-      - name: "addressCountry"
-        in: "query"
-        description: "The address country of the customer or dealer. Format: [ISO 3166 ALPHA2]. Valid examples: DE, GB, AE-AZ."
-        pattern: "^[A-Z]{2,2}(-[A-Z]{2,2})?$"
-        required: true
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/GetUserAgreementResponse"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        422:
-          description: "Unprocessable Entity"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-    post:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "useragreement"
-      summary: "Consents to the provided user agreements for a given vehicle (Vin) and a given user (CiamId)"
-      operationId: "consentUserAgreements"
-      produces:
-      - "application/json"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The ciam id to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "locale"
-        in: "query"
-        description: "This field specifies in which locale the localized texts of the answer shall be delivered. Format [ISO 639-1]-[ISO 3166 ALPHA2]. Valid examples: de-DE, zh-CN."
-        pattern: "^[a-z]{2,2}-[A-Z]{2,2}$"
-        required: true
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      - name: "body"
-        in: "body"
-        description: "The payload which reflects the consent of the user to certain user agreements"
-        required: true
-        schema:
-          $ref: '#/definitions/SetUserAgreementConsentRequest'
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/SetUserAgreementConsentResponse"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        422:
-          description: "Unprocessable Entity"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-  /vehicle/{Vin}/user/{deprecatedCiamID}/services:
-    get:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "service"
-      summary: "Get the services for a given vehicle (Vin) and a given user (CiamId). It does not return services that
-                have only access rights of READ."
-      operationId: "getServices"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "Vin"
-        in: "path"
-        description: "VIN to identify the vehicle"
-        required: true
-        type: "string"
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The ciam id to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "locale"
-        in: "query"
-        description: "This field specifies in which locale the localized texts of the answer shall be delivered. Format [ISO 639-1]-[ISO 3166 ALPHA2]. Valid examples: de-DE, zh-CN."
-        pattern: "^[a-z]{2,2}-[A-Z]{2,2}$"
-        required: true
-        type: "string"
-      - name: "group_by"
-        in: "query"
-        description: "This field specifies by which key the response should be grouped. If no group_by parameter is given the response contains one group named `all`. Every key which has a string-type value in the service response is valid. Beware that this parameter is case-sensitive. It must exactly match the JSON key."
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/GetServicesResponseGrouped"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        422:
-          description: "Unprocessable Entity"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-    post:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "service"
-      summary: "Sets the desired activation status of to the provided services for a given vehicle (Vin) and a given user (CiamId)"
-      operationId: "setDesiredServiceStatus"
-      produces:
-      - "application/json"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "Vin"
-        in: "path"
-        description: "VIN to identify the vehicle"
-        required: true
-        type: "string"
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The ciam id to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      - name: "body"
-        in: "body"
-        description: "The payload which reflects the desired service activation status"
-        required: true
-        schema:
-          $ref: '#/definitions/SetDesiredServiceActivationRequest'
-      responses:
-        202:
-          description: "Accepted"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/SetDesiredServiceActivationError"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/SetDesiredServiceActivationError"
-        422:
-          description: "Unprocessable Entity"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-
-  /vehicle/{Vin}/user/{deprecatedCiamID}/assignment:
-    put:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "assignment"
-      summary: "Creates a user assignment for a given vehicle (Vin) and a given user (CiamId)"
-      operationId: "createUserAssignment"
-      produces:
-      - "application/json"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "Vin"
-        in: "path"
-        description: "VIN to identify the vehicle"
-        required: true
-        type: "string"
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The user id or CIAM id to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: >
-            An assignment was created. It has the trust level "1". This trust
-            level can be overwritten by another assignment with trist level 1.
-            It is necessary for both VAC assignment or -- if the vehicle is not
-            RIF-able -- to enable a call center agent of Daimler to confirm the
-            assignment via phone. The information if the given vehicle is
-            RIF-able is returned in the success case.
-          schema:
-            $ref: "#/definitions/rifability"
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        409:
-          description: "Conflict"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        412:
-          description: "Precondition Failed"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-    delete:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "assignment"
-      summary: "deleteUserAssignment"
-      operationId: "deleteUserAssignment"
-      produces:
-      - "application/json"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "Vin"
-        in: "path"
-        description: "VIN to identify the vehicle"
-        required: true
-        type: "string"
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The ciam id to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: |
-            The deletion of the assignment was successfull and vehicle data
-            could be aggregated. The `pending` parameter indicates if the
-            vehicle data is outdated. Pending means that a change of the
-            assignment state of an user and a vehicle was succesfull but the BFF
-            was unable to get updated vehicle data. This means NOT that the act
-            of (dis)assigning is pending! So if the `pending` parameter is not
-            present the vehicle data is updated.
-          schema:
-            $ref: "#/definitions/ChangeAssignmentResponse"
-        204:
-          description: |
-            The deletion of the assignment was successfull but no vehicle
-            data could be aggregated. Not even outdated ones.
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        412:
-          description: "Precondition Failed"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-  /users/{deprecatedCiamID}/qr-assignment:
-    post:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "assignment"
-      operationId: "assignWithQR"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "The ciam id to identify the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "QrAssignment"
-        in: "body"
-        required: true
-        schema:
-          $ref: '#/definitions/QrAssignment'
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: |
-            The confirmation of the QR-assignment was successfull and vehicle data
-            could be aggregated. The `pending` parameter indicates if the
-            vehicle data is outdated. Pending means that a change of the
-            assignment state of an user and a vehicle was succesfull but the BFF
-            was unable to get updated vehicle data. This means NOT that the act
-            of (dis)assigning is pending! So if the `pending` parameter is not
-            present the vehicle data is updated.
-          schema:
-            $ref: "#/definitions/ChangeAssignmentResponse"
-        204:
-          description: |
-            The confirmation of the QR-assignment was successfull but no vehicle
-            data could be aggregated. Not even outdated ones.
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        410:
-          description: "Gone"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-  /vehicle/{finorvin}/images:
-    get:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "Vehicle Images"
-      description: "Returns URLs pointing to images of this vehicle. This endpoint checks if the ciam id which is encoded in the JWT has the given VIN associated with it."
-      operationId: "getVehicleImagesForFINorVIN"
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "finorvin"
-        in: "path"
-        description: "<span><p>The FIN or VIN of one specific vehicle. For tryout the following sample FINs are available:</p><ul><li>E 350 d: WDD2130331A123456 </li><li>B 180: WDD2462421N123456 </li><li>GLA 200: WDC1569431J123456 </li><li>S 500 Cabriolet: WDD2174821A123456 </li><li>Smart fortwo turbo: WME4533441K012345</li></ul></span>"
-        required: true
-        type: "string"
-      - name: "imageKeys"
-        description: "One or more combinations of perspective and imageType as a comma separated String list e.g. 'BE020-A4,BE090-A27,BI1-A4'."
-        in: "query"
-        type: "string"
-        required: true
-      - name: "imageTypes"
-        description: "One or more values of imageTypes as a comma separated String list e.g. 'A24,A34'."
-        in: "query"
-        required: false
-        type: "string"
-      - name: "roofOpen"
-        in: "query"
-        description: "If true, the roof will be shown in an open state. Available only for convertibles."
-        required: false
-        type: "boolean"
-      - name: "doorsOpen"
-        in: "query"
-        description: "If true, the doors of the vehicle will be shown in open state. Currently only Available for vehicles with gullwing doors."
-        required: false
-        type: "boolean"
-      - name: "centered"
-        in: "query"
-        description: "If true, the vehicle will be positioned in the middle of the image. Currently only static images are affected."
-        required: false
-        type: "boolean"
-      - name: "night"
-        in: "query"
-        description: "If true, the vehicle's headlights are turned on in combination with a slightly darker background."
-        required: false
-        type: "boolean"
-      - name: "background"
-        description: "If no value is provided a default will be used. In case of an invalid or unknown value an error is returned."
-        in: "query"
-        required: false
-        type: "string"
-      responses:
-        200:
-          description: "Successful response"
-          schema:
-            $ref: "#/definitions/VehicleImageResponse"
-        400:
-          description: "One of the provided parameters was invalid. Inspect the error object in the response for further information."
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        403:
-          description: "Forbidden"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-
-  /vehicles/{Vin}/assignments/vac/{code}/user/{deprecatedCiamID}/confirmation:
-    put:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "assignment"
-      summary: "confirmVacAssignment"
-      operationId: "confirmVacAssignment"
-      produces:
-      - "application/json"
-      consumes:
-      - "application/json"
-      parameters:
-      - name: "Vin"
-        in: "path"
-        description: "VIN of the vehicle assignment to be confirmed."
-        required: true
-        type: "string"
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "CiamId of the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "code"
-        in: "path"
-        description: "the numeric vehicle assignment code, which has a length of 8\
-          \ characters."
-        required: true
-        type: "string"
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: |
-            The confirmation of the assignment was successfull and vehicle data
-            could be aggregated. The `pending` parameter indicates if the
-            vehicle data is outdated. Pending means that a change of the
-            assignment state of an user and a vehicle was succesfull but the BFF
-            was unable to get updated vehicle data. This means NOT that the act
-            of (dis)assigning is pending! So if the `pending` parameter is not
-            present the vehicle data is updated.
-          schema:
-            $ref: "#/definitions/ChangeAssignmentResponse"
-        204:
-          description: |
-            The confirmation of the assignment was successfull but no vehicle
-            data could be aggregated. Not even outdated ones.
-        400:
-          description: "Bad Request"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        409:
-          description: "Conflict"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-  /vehicle/{deprecatedCiamID}/masterdata:
-    get:
-      security:
-      - APIKeyHeader: []
-      tags:
-      - "masterdata"
-      summary: "Gets the master data of a vehicle"
-      description: "Gets the master data of a vehicle"
-      operationId: "getVehicleMasterDataByCiamId"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "deprecatedCiamID"
-        in: "path"
-        description: "ciam ID of the user. This field is ignored. The ciamid is taken from the jwt."
-        required: true
-        type: "string"
-      - name: "countryCode"
-        in: "query"
-        description: "the ISO 3166 alpha-2 country code"
-        required: true
-        type: "string"
-      - name: "locale"
-        in: "query"
-        description: "the locale"
-        required: true
-        type: "string"
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            $ref: "#/definitions/VehicleMasterDataResponse"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Not Found"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-
-  /countries:
-    get:
-      tags:
-      - "CountryMasterData"
-      description: "Returns the list of supported countries"
-      operationId: "getCountryMasterData"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      - name: locale
-        in: query
-        description: "The locale is used to retrieve the internationalized country name. Format [ISO 639-1]-[ISO 3166 ALPHA2]. Valid examples: de-DE, zh-CN."
-        required: true
-        type: string
-        pattern: '^[a-z]{2,2}-[A-Z]{2,2}$'
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/CountryInformation'
-        422:
-          description: "Unprocessable Entity"
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-  /apps:
-    get:
-      tags:
-      - "Apps"
-      description: "Provides the list of apps in the app family"
-      operationId: "getApps"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "X-TrackingId"
-        in: "header"
-        description: "The tracking id"
-        required: true
-        type: "string"
-      - name: locale
-        in: query
-        description: "The locale is used translate the description texts. Format [ISO 639-1]-[ISO 3166 ALPHA2]. Valid examples: de-DE, zh-CN."
-        required: true
-        type: string
-        pattern: '^[a-z]{2,2}-[A-Z]{2,2}$'
-      responses:
-        200:
-          description: "successful operation"
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/App'
-        500:
-          description: "Internal Server Error"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
-        502:
-          description: "Bad Gateway"
-          schema:
-            $ref: "#/definitions/ErrorDescription"
 definitions:
-  ChangeAssignmentResponse:
-    type: object
+  pet:
     required:
-    - vehicleMasterDataResponse
-    - pending
-    - Vin
+      - name
+      - type
     properties:
-      vehicleMasterDataResponse:
-        type: object
-        description: |
-          Array of vehicle data
-        $ref: '#/definitions/VehicleMasterDataResponse'
-      pending:
-        type: object
-        description: |
-          Pending means that a change of the assignment state of an user and a
-          vehicle was succesfull but the BFF was unable to get updated vehicle
-          data. This means NOT that the act of (un)assigning is pending!
-        $ref: '#/definitions/Pending'
-      Vin:
-        type: string
-        description: |
-          This is the VIN for which the assignment has been changed. In the case
-          that an (un)assignment was succssfull but the user / vehicle data
-          have not been updated the VIN will be also in the pending object.
-  Pending:
-    type: array
-    items:
-      type: object
-      required:
-      - vin
-      - state
-      properties:
-        vin:
-          type: string
-          x-nullable: false
-        state:
-          type: string
-          x-nullable: false
-          enum:
-          - assigning
-          - deleting
-  AssistanceMailRequest:
-    type: object
-    required:
-      - language
-      - firstName
-      - lastName
-      - zipCode
-      - country
-      - customerEmail
-      - appName
-      - appVersion
-    properties:
-      appName:
-        description: "Name of the website/App."
-        type: "string"
-      language:
-        description: "Language selected by the user."
-        type: "string"
-      firstName:
-        type: "string"
-      lastName:
-        type: "string"
-      streetName:
-        type: "string"
-      streetNumber:
-        type: "string"
-      zipCode:
-        type: "string"
-      city:
-        type: "string"
-      country:
-        type: "string"
-      phone:
-        type: "string"
-      customerEmail:
-        type: "string"
-        format: email
-      device:
-        description: "Kind of device the request is being sent from (iPhone, Android, etc)."
-        type: "string"
-      OS:
-        description: "Operating System of the device."
-        type: "string"
-      appVersion:
-        description: "Version of the App/website this is being sent from."
-        type: "string"
-      messageText:
-        description: "Extra information written by the sender."
-        type: "string"
-      ### Current implementation doesn't support attachments
-      # attachment:
-      #   type: "object"
-      #   required:
-      #     - attachmentName
-      #     - attachedFile
-      #   properties:
-      #     attachmentName:
-      #       description: "Filename of the attachment"
-      #       type: "string"
-      #     attachedFile:
-      #       description: "Attachment in base64"
-      #       type: "string"
-  InvalidFormError:
-    type: array
-    items:
-      type: object
-      properties:
-        fieldName:
-          type: "string"
-        errorType:
-          type: "string"
-          enum:
-            - "FieldTooLong"
-            - "FieldTooShort"
-            - "InvalidCharacter"
-            - "InvalidValue"
-            - "FileTooBig"
-  getOutletsBody:
-    type: object
-    properties:
-      zipCode:
-        type: string
-      countryIsoCode:
-        type: string
-      searchArea:
-        type: object
-        properties:
-          center:
-            type: object
-            properties:
-              latitude:
-                type: string
-              longitude:
-                type: string
-          radius:
-            type: object
-            properties:
-              value:
-                type: string
-              unit:
-                type: string
-  rifability:
-    type: object
-    required:
-      - rifable
-    properties:
-      rifable:
-        type: boolean
-        description: rif is supported
-  Outlets:
-    type: array
-    items:
-      $ref: "#/definitions/Outlet"
-  Outlet:
-    type: object
-    properties:
-      legalName:
-        type: string
-        description: legal name of the company
-      address:
-        description: outlet address
-        $ref: "#/definitions/DealerAddress"
-      region:
-        description: region and subregion
-        $ref: "#/definitions/RegionRepresentation"
-      geoCoordinates:
-        description: geo coordinates in GeoDecimal format
-        $ref: "#/definitions/GeoCoordinates"
-      spokenLanguages:
-        type: array
-        description: main language used at the outlet
-        items:
-          $ref: "#/definitions/Language"
-      communication:
-        description: the outlet's communication
-        $ref: "#/definitions/CommunicationChannels"
-      openingHours:
-        description: the outlet's opening time
-        $ref: "#/definitions/OutletOpeningTimeWeekdays"
-  DealerAddress:
-    type: object
-    properties:
-      street:
-        type: string
-        description: street and house number, if applicable
-      addressAddition:
-        type: string
-        description: address addition
-      zipCode:
-        type: string
-        description: postal code
-      city:
-        type: string
-        description: city
-      district:
-        type: string
-        description: district, area of city
-      countryIsoCode:
-        type: string
-        description: ISO A2 country code
-  RegionRepresentation:
-    type: object
-    properties:
-      region:
-        type: string
-        description: region
-      subRegion:
-        type: string
-        description: subregion
-  GeoCoordinates:
-    type: object
-    required:
-    - latitude
-    - longitude
-    properties:
-      latitude:
-        type: number
-        format: double
-        description: latitude - in decimal degrees
-      longitude:
-        type: number
-        format: double
-        description: longitude - in decimal degrees
-  Language:
-    type: object
-    required:
-    - languageIsoCode
-    properties:
-      languageIsoCode:
-        type: string
-        description: ISO-639 code of language
-  CommunicationChannels:
-    type: object
-    properties:
-      fax:
-        type: string
-        description: general fax number
-      email:
-        type: string
-        description: general email address
-      website:
-        type: string
-        description: general website
-      facebook:
-        type: string
-        description: general facebook URL
-      mobile:
-        type: string
-        description: general mobile phone number
-      googlePlus:
-        type: string
-        description: general googlePlus account name
-      twitter:
-        type: string
-        description: general twitter account name
-      phone:
-        type: string
-        description: general phone number
-  App:
-    type: object
-    properties:
-      appStoreLinkAndroid:
-        type: string
-      appStoreLinkiOS:
-        type: string
-      description:
-        type: string
-      icon:
-        type: string
-      link:
-        type: string
       name:
         type: string
-  GetServicesResponseGrouped:
-    type: array
-    items:
-      type: object
-      properties:
-        group:
-          type: string
-        services:
-          $ref: "#/definitions/GetServicesResponse"
-  GetServicesResponse:
-    type: array
-    items:
-      $ref: "#/definitions/Service"
-  Service:
-    type: object
-    properties:
-      id:
-        type: "integer"
-        format: "int64"
-      name:
-        type: string
-      description:
-        type: string
-      shortName:
-        type: string
-      categoryName:
-        type: string
-        description: "The category name of the service in the given locale"
-        example: "Safety and Service for locale `en-GB`"
-      allowedActions:
-        type: array
-        items:
-          $ref: "#/definitions/ServiceActions"
-      activationStatus:
-        $ref: "#/definitions/ServiceStatus"
-      desiredServiceStatus:
-        $ref: "#/definitions/ServiceStatus"
-      actualActivationServiceStatus:
-        $ref: "#/definitions/ServiceStatus"
-      virtualActivationServiceStatus:
-        $ref: "#/definitions/ServiceStatus"
-      prerequisiteChecks:
-        type: array
-        items:
-          type: object
-          properties:
-            name:
-              type: string
-              description: >
-                The field prerequisiteChecks contains the result of all checks that were performed for a service. Each check is either successful or not and can suggest a list of actions that could change the result. At the moment, prerequisite checks with the following names exist.</br>
-                 <strong>NOTE</strong>: The list may be extended in the future and not every check is executed on every service.
-              enum:
-              - license                 # If the service requires a license, this checks verifies that the user has a valid license.
-              - technicalAvailability   # Verifies that the service is technically available (supported by the vehicle platform). In some cases, a service may no longer be supported by the vehicle and would fail this check.
-              - contractualAvailability # Verifies that the service is available in the country of the user. Note that SA+ services are simply assumed to be always available (see VCB-3112). Refer to the AdminUI view "ServiceStatus" for the actual contractual availability status of SA+ services, which can be NOT_AVAILABLE for unassigned vehicles.
-              - requiredFields        	# Verifies that service rules are fulfilled. Checks the required fields of a user and the custom properties. The description contains the field that the user did not comply.
-              - trustlevel              # Verifies that the user has the required trust level to use the service.
-              - userAgreement           # Verifies that the user has accepted the required user agreements.
-              - fuseBox	                # If a fuse box entry exist, this check will fail and prevent the activation of the service.
-              - consent                 # If the user did not agree to activate the service, this check will fail
-            missingFields:
-              type: array
-              x-nullable: true
-              items:
-                type: string
-            actions:
-              type: array
-              items:
-                $ref: "#/definitions/ServiceActions"
-      rights:
-        type: "array"
-        items:
-          $ref: "#/definitions/ServiceRight"
-
-  ServiceActions:
-    type: string
-    description: >
-      At the moment, the following actions exist and can change the outcome of a prerequisite check result.</br>
-      <strong>NOTE</strong>: Do not assume that only these actions are returned. The list might be extended in the future!
-    enum:
-    - SET_DESIRED_ACTIVE   # The user can set their desired service status to ACTIVE. This action will only be returned if the desired status is INACTIVE or not set.
-    - SET_DESIRED_INACTIVE # The user can set their desired service status to INACTIVE. This action will only be returned if the desired status is ACTIVE or not set.
-    - SIGN_USER_AGREEMENT  # The user can sign a user agreement to allow the activation of the service.
-    - EDIT_USER_PROFILE    # The user can edit their user profile to fulfill service rules.
-    - UPDATE_TRUST_LEVEL   # The user can update their trust level to reach the necessary trust level to allow the activation of the service.
-    - SET_CUSTOM_PROPERTY  # A custom property to fulfill the service rules is missing and should be set.
-    - PURCHASE_LICENSE     # The user can buy a license to use the service.
-    - REMOVE_FUSEBOX_ENTRY # A fuse box entry prevents the service from being activated. The fuse box entry should be removed to use the service.
-
-  ServiceStatus:
-    type: string
-    enum:
-    - UNKNOWN # 	The status of the service is unknown.
-    - ACTIVE  # 	The service is active.
-    - INACTIVE # 	The service is inactive.
-    - ACTIVATION_PENDING # The service is still inactive, but a request to activate the service is pending.
-    - DEACTIVATION_PENDING # The service is still active, but a request to deactivate the service is pending.
-
-  ServiceRight:
-    type: string
-    description: >
-      The field rights contains the permission to interact with a service. The response is a list containing all given rights. In the case of an empty list, no action is permitted on the service (hidden service).
-      At the moment the following rights are defined.</br>
-      <strong>NOTE</strong>: Do not rely that only this values can be returned. The values might be extended in the future!
-    enum:
-    - READ	# The status of the service can be displayed to the user.
-    - ACTIVATE	# The user is permitted to activate the service.
-    - DEACTIVATE	# The user is permitted to deactivate the service.
-    - EXECUTE	# The user is permitted to execute or use the service.
-    - MANAGE	# The user is permitted to change setting of the service. It depends on the concrete service.
-
-  SetDesiredServiceActivationRequest:
-    type: object
-    properties:
-      services:
-        type: array
-        items:
-          type: object
-          properties:
-            serviceId:
-              type: "integer"
-              format: "int64"
-            desiredServiceStatus:
-              type: string
-              enum:
-              - ACTIVE  # 	The service is active.
-              - INACTIVE # 	The service is inactive.
-
-  SetDesiredServiceActivationError:
-    type: string
-    enum:
-    - VEHICLE_NOT_FOUND   # The vehicle doesn't exist
-    - USER_NOT_FOUND      # A user with the ID entered does not exist
-    - SERVICE_NOT_FOUND   # One of the requested services to update doesn't exist
-    - USER_NOT_AUTHORIZED # The user is not authorized for the given vehicle
-    - USER_NO_PERMISSION  # The user has no service permission to activate/deactivate the service
-
-  GetUserAgreementResponse:
-    type: array
-    items:
-      type: object
-      $ref: "#/definitions/Document"
-
-  Document:
-    type: object
-    properties:
-      documentData:
-        type: string
-        format: byte
-        description: "base64 encoded pdf containing the payload"
-      documents:
-        type: array
-        items:
-          $ref: "#/definitions/DocumentInformation"
-
-  DocumentInformation:
-    type: object
-    description: "Document information."
-    required:
-      - acceptedByUser
-      - documentId
-      - documentVersion
-    properties:
-      documentId:
-        type: string
-        description: "The document id."
-        minLength: 1
-        maxLength: 50
-      documentVersion:
+        minLength: 4
+        pattern: "^[a-zA-Z0-9- ]+$"
+      age:
         type: integer
-        description: 'The version of the document.'
-      acceptedByUser:
-        type: boolean
-        description: 'The acceptance status of the user agreement for the specific user'
-      acceptedLocale:
-        description: 'Specifies the language of the signed user agreement. Format [ISO 639-1]-[ISO 3166 ALPHA2]. Valid examples: de-DE, zh-CN.'
+      dob:
         type: string
-        pattern: '^[a-z]{2,2}-[A-Z]{2,2}$'
-
-
-  SetUserAgreementConsentRequest:
-    type: object
-    properties:
-      documents:
-        type: array
-        items:
-          $ref: "#/definitions/DocumentInformation"
-
-  SetUserAgreementConsentResponse:
-    type: object
-    properties:
-      unsuccessfulSetDocIds:
-        description: "List of user agreement ids"
-        type: array
-        items:
-          type: string
-      allUserAgreementConsentsSet:
-        description: "Returns true if the state of all consents was set successfully."
-        type: boolean
-
-  LoginData:
-    type: "object"
-    required:
-    - emailOrPhoneNumber
-    - countryCode
-    properties:
-      emailOrPhoneNumber:
+        format: 'date'
+      type:
         type: string
-        x-nullable: false
-        example: "johnneumann@example.com"
-      countryCode:
-        type: string
-        x-nullable: false
-        example: "DE"
-      locale:
-        type: string
-        example: "de-DE"
-  LoginResponse:
-    type: "object"
-    required:
-    - username
-    - isEmail
-    properties:
-      username:
-        type: string
-        example: "johnneumann"
-        description: "The username which should be used for the given eMail or phone number in the Keycloak Password owners credentials flow. Empty iff no user exists for the email/phone number."
-      isEmail:
-        type: boolean
-        description: "Was the supplied username an email address?"
-        x-nullable: false
-
-  PostUserError:
-    type: object
-    properties:
-      code:
-        $ref: "#/definitions/PostUserErrorArray"
-  PostUserErrorArray:
-    type: "array"
-    items:
-      type: string
-      enum:
-      # Definition of custom error codes
-      # 1xxx: Empty Codes
-      - "1001" # emptyFirstNameValidationError
-      - "1002" # emptyLastNameValidationError
-      - "1003" # emptyEmailValidationError
-      - "1004" # emptyPasswordValidationError
-      - "1005" # emptyMobileNumberValidationError
-      # 2xxx: Conflict Codes
-      - "2003" # emailExistsError
-      - "2004" # mobileNumberExistsError
-      - "2005" # mobileNumberOrUsernameExistsError
-      - "2006" # userPinExistsError
-      # 3xxx: Invalid Value Codes
-      - "3001" # invalidEmailFormatValidationError
-      - "3002" # passwordTooShortValidationError
-      # minimalPasswordLength = 8
-      - "3003" # passwordTooLongValidationError
-      # maximalPasswordLength = 20
-      - "3004" # passwordNoUppercaseValidationError
-      - "3005" # passwordNoLowercaseValidationError
-      - "3006" # passwordNoNumberValidationError
-      - "3007" # passwordNoSpecialCharacterValidationError
-      - "3008" # invalidMobileNumberValidationError
-      - "3009" # tooLongFirstNameValidationError
-      - "3010" # tooLongLastNameValidationError
-      # first and last names are too long if they are more than 50 characters long
-      # maximalNameLength = 50
-      - "3011" # tooShortEmailValidationError
-      # The minimum length of an email address is set to 6 characters
-      # minimalEmailLength = 6
-      - "3012" # tooLongEmailValidationError
-      # the maximum length is arbitrarily set to 50 characters
-      # maximalEmailLength = 50
-      - "3013" # tooShortMobileNumberValidationError
-      - "3014" # tooLongMobileNumberValidationError
-      - "3015" # currentUserPinTooShortValidationError
-      - "3016" # currentUserPinTooLongValidationError
-      - "3017" # currentUserPinFormatValidationError
-      - "3018" # newUserPinTooShortValidationError
-      - "3019" # newUserPinTooLongValidationError
-      - "3020" # newUserPinFormatValidationError
-      - "3021" # currentUserPinIncorrectError
-      - "3022" # invalidCountryCode
-  InputStream:
-    type: string
-    format: binary
-  OutputStream:
-    type: string
-    format: binary
-
-  CreateUserDataRequest:
-    type: "object"
-    properties:
-      email:
-        type: "string"
-        x-nullable: false
-      mobileNumber:
-        type: "string"
-        x-nullable: false
-      firstName:
-        type: "string"
-        x-nullable: false
-      lastName:
-        type: "string"
-        x-nullable: false
-      useEmailAsUsername:
-        type: "boolean"
-        x-nullable: false
-      countryCode:
-        type: "string"
-        x-nullable: false
-        pattern: '^[A-Z]{2,2}$'
-        description: 'The country code. Format: [ISO 3166 ALPHA2]. Valid examples: DE, GB'
-      locale:
-        type: string
-        description: "The preferred language of the user. Format [ISO 639-1]-[ISO 3166 ALPHA2]. Valid examples: de-DE, zh-CN."
-        x-nullable: false
-        pattern: '^[a-z]{2,2}-[A-Z]{2,2}$'
-
-  CreateUserDataResponse:
-    type: "object"
-    required:
-    - email
-    - firstName
-    - lastName
-    - username
-    - id
-    - mobileNumber
-    - useEmailAsUsername
-    - countryCode
-    properties:
-      email:
-        type: "string"
-        x-nullable: false
-      firstName:
-        type: "string"
-        x-nullable: false
-      lastName:
-        type: "string"
-        x-nullable: false
-      username:
-        type: "string"
-        x-nullable: false
-      id:
-        type: "string"
-        x-nullable: false
-      mobileNumber:
-        type: "string"
-        x-nullable: false
-      useEmailAsUsername:
-        type: "boolean"
-        x-nullable: false
-      countryCode:
-        type: "string"
-        x-nullable: false
-  ErrorDescription:
-    type: "object"
-    properties:
-      description:
-        type: "string"
-        example: "Could not get answer from rs backend connector"
-  GatewayErrorDescription:
-    type: "object"
-    properties:
-      description:
-        type: "string"
-        example: "Keycloak returned 500"
-        description: "Error description"
-      service:
-        type: "string"
-        example: "keycloak"
-        description: "Dependent service that failed (optional, only exposed on test stages)."
-
-  VehicleImageResponse:
-    description: "The response object holds either an error object, in case that the request was malformed, or a vehicle object containing all urls for the requested imageKeys."
-    type: array
-    items:
-      "$ref": "#/definitions/VehicleImage"
-
-  VehicleImage:
-    description: "An object describing the vehicle image. Contains the URL to either static hosted images or dynamically rendered content. In case of an error that is related to the imageKey, an error object is present containing further information."
-    properties:
-      imageKey:
-        type: string
-      error:
-        "$ref": "#/definitions/VehicleImageError"
-      url:
-        type: string
-
-  VehicleImageError:
-    properties:
-      code:
-        type: integer
-      message:
-        type: string
-
-  UserVehicleImagesResponse:
-    description: "The response object holds either an error object, in case that the request was malformed, or a vehicle object containing all urls for the requested imageKeys."
-    type: array
-    items:
-      type: object
-      properties:
-        vinOrFin:
-          type: string
-        images:
-          "$ref": "#/definitions/VehicleImageResponse"
-
-  UpdateUserRequestBody:
-    type: "object"
-    properties:
-      firstName:
-        type: "string"
-        pattern: ".{1,256}"
-        x-nullable: true
-      lastName1:
-        type: "string"
-        pattern: ".{1,256}"
-        x-nullable: true
-      lastName2:
-        type: "string"
-        x-nullable: true
-      title:
-        type: "string"
-        pattern: "^$|[A-Z][A-Z0-9_]*[A-Z0-9]|[A-Z]"
-        x-nullable: true
-      namePrefix:
-        type: "string"
-        x-nullable: true
-      middleInitial:
-        type: "string"
-        x-nullable: true
-      salutationCode:
-        type: "string"
-        pattern: "^$|[A-Z][A-Z0-9_]*[A-Z0-9]|[A-Z]"
-        x-nullable: true
-      email:
-        type: "string"
-        pattern: ".{0,256}"
-        x-nullable: true
-      landlinePhone:
-        type: "string"
-        x-nullable: true
-      mobilePhoneNumber:
-        type: "string"
-        pattern: ".{0,256}"
-        x-nullable: true
-      birthday:
-        type: "string"
-        format: "date"
-        x-nullable: true
-      preferredLanguageCode:
-        type: "string"
-        pattern: "[a-z]{2}-[A-Z]{2}"
-        x-nullable: true
-      address:
-        $ref: "#/definitions/UpdateUserAddressRequest"
-        x-nullable: true
-      communicationPreference:
-        $ref: "#/definitions/UpdateUserCommunicationPreferenceRequest"
-        x-nullable: true
-      accountCountryCode:
-        type: "string"
-        pattern: "[A-Z]{2}|[A-Z]{2}-[A-Z]{2}"
-        x-nullable: true
-  UpdateUserAddressRequest:
-    type: "object"
-    properties:
-      state:
-        type: "string"
-        x-nullable: true
-      province:
-        type: "string"
-        x-nullable: true
-      street:
-        type: "string"
-        x-nullable: true
-      houseNo:
-        type: "string"
-        pattern: ".{0,10}"
-        x-nullable: true
-      zipCode:
-        type: "string"
-        pattern: ".{0,10}"
-        x-nullable: true
-      city:
-        type: "string"
-        x-nullable: true
-      streetType:
-        type: "string"
-        pattern: ".{0,256}"
-        x-nullable: true
-      houseName:
-        type: "string"
-        x-nullable: true
-      floorNo:
-        type: "string"
-        x-nullable: true
-      doorNo:
-        type: "string"
-        x-nullable: true
-      addressLine1:
-        type: "string"
-        x-nullable: true
-      addressLine2:
-        type: "string"
-        x-nullable: true
-      addressLine3:
-        type: "string"
-        x-nullable: true
-      postOfficeBox:
-        type: "string"
-        x-nullable: true
-
-  UserAddressResponse:
-    properties:
-      countryCode:
-        type: "string"
-        pattern: "[A-Z]{2}|[A-Z]{2}-[A-Z]{2}"
-      state:
-        type: "string"
-      province:
-        type: "string"
-      street:
-        type: "string"
-      houseNo:
-        type: "string"
-        pattern: ".{0,10}"
-      zipCode:
-        type: "string"
-        pattern: ".{0,10}"
-      city:
-        type: "string"
-      streetType:
-        type: "string"
-        pattern: ".{0,256}"
-      houseName:
-        type: "string"
-      floorNo:
-        type: "string"
-      doorNo:
-        type: "string"
-      addressLine1:
-        type: "string"
-      addressLine2:
-        type: "string"
-      addressLine3:
-        type: "string"
-      postOfficeBox:
-        type: "string"
-
-  UserCommunicationPreference:
-    type: "object"
-    properties:
-      contactedByPhone:
-        type: "boolean"
-      contactedByLetter:
-        type: "boolean"
-      contactedByEmail:
-        type: "boolean"
-      contactedBySms:
-        type: "boolean"
-
-  UpdateUserCommunicationPreferenceRequest:
-    type: "object"
-    properties:
-      contactedByPhone:
-        type: "boolean"
-        x-nullable: true
-      contactedByLetter:
-        type: "boolean"
-        x-nullable: true
-      contactedByEmail:
-        type: "boolean"
-        x-nullable: true
-      contactedBySms:
-        type: "boolean"
-        x-nullable: true
-
-  UserResponseBody:
-    required:
-    - "accountIdentifier"
-    properties:
-      createdAt:
-        type: "string"
-        format: "date-time"
-      createdBy:
-        type: "string"
-      isEmailCiamVerified:
-        type: "boolean"
-      isMobileCiamVerified:
-        type: "boolean"
-      accountVerified:
-        type: "boolean"
-      accountIdentifier:
-        type: "string"
-        enum:
-        - "EMAIL"
-        - "MOBILE"
-        - "EMAIL_AND_MOBILE"
-      formattedAddress:
-        type: "array"
-        items:
-          type: "string"
-      updatedAt:
-        type: "string"
-        format: "date-time"
-      identificationType:
-        type: "string"
-      caseNumber:
-        type: "string"
-      ciamId:
-        type: "string"
-        pattern: "[0-9A-Za-z_]{0,16}"
-      userId:
-        type: "string"
-        pattern: "[0-9A-Za-z_]{0,40}"
-      firstName:
-        type: "string"
-        pattern: ".{1,256}"
-      lastName1:
-        type: "string"
-        pattern: ".{1,256}"
-      lastName2:
-        type: "string"
-      title:
-        type: "string"
-        pattern: "^$|[A-Z][A-Z0-9_]*[A-Z0-9]|[A-Z]"
-      namePrefix:
-        type: "string"
-      middleInitial:
-        type: "string"
-      salutationCode:
-        type: "string"
-        pattern: "^$|[A-Z][A-Z0-9_]*[A-Z0-9]|[A-Z]"
-      email:
-        type: "string"
-        pattern: ".{0,256}"
-      landlinePhone:
-        type: "string"
-      mobilePhoneNumber:
-        type: "string"
-        pattern: ".{0,256}"
-      birthday:
-        type: "string"
-        format: "date"
-      userPinStatus:
-        type: string
-        enum: ["SET", "NOT_SET", "UNKNOWN"]
-      preferredLanguageCode:
-        type: "string"
-        pattern: "[a-z]{2}-[A-Z]{2}"
-      accountCountryCode:
-        type: "string"
-        pattern: "[A-Z]{2}|[A-Z]{2}-[A-Z]{2}"
-      address:
-        $ref: "#/definitions/UserAddressResponse"
-      communicationPreference:
-        $ref: "#/definitions/UserCommunicationPreference"
-      ucId:
-        type: "string"
-        pattern: "[0-9A-Z]{19}"
-      vip:
-        type: "boolean"
-      identificationNumber:
-        type: "string"
-
-  UserData:
-    type: "object"
-    required:
-    - ciamId
-    - userId
-    - firstName
-    - lastName1
-    - createdAt
-    - updatedAt
-    properties:
-      ciamId:
-        type: "string"
-        x-nullable: false
-      userId:
-        type: "string"
-        x-nullable: false
-      firstName:
-        type: "string"
-        x-nullable: false
-      lastName1:
-        type: "string"
-        x-nullable: false
-      lastName2:
-        type: "string"
-        x-nullable: true
-      title:
-        type: "string"
-        x-nullable: true
-      namePrefix:
-        type: "string"
-        x-nullable: true
-      middleInitial:
-        type: "string"
-        x-nullable: true
-      salutationCode:
-        type: "string"
-        x-nullable: true
-      email:
-        type: "string"
-        x-nullable: true
-      landlinePhone:
-        type: "string"
-        x-nullable: true
-      mobilePhoneNumber:
-        type: "string"
-        x-nullable: true
-      birthday:
-        type: "string"
-        x-nullable: true
-      userPinStatus:
-        type: string
-        enum: ["SET", "NOT_SET", "UNKNOWN"]
-      preferredLanguageCode:
-        type: "string"
-        x-nullable: true
-      accountCountryCode:
-        type: "string"
-        x-nullable: true
-      createdAt:
-        type: "string"
-        x-nullable: false
-      createdBy:
-        type: "string"
-        x-nullable: true
-      updatedAt:
-        type: "string"
-        x-nullable: false
-      ucId:
-        type: "string"
-        x-nullable: true
-      vip:
-        type: boolean
-        x-nullable: true
+        enum: [cat, dog, bird]
       address:
         $ref: "#/definitions/address"
-        x-nullable: true
-      communicationPreference:
-        $ref: "#/definitions/communicationPreference"
-        x-nullable: true
-      _links:
-        $ref: "#/definitions/_links"
-        x-nullable: true
+      vet:
+        $ref: "#/definitions/veterinarian"
+      tags:
+        type: array
+        uniqueItems: true
+        items:
+          type: string
+          minLength: 1
 
-  QrAssignment:
-    type: "object"
+  veterinarian:
     required:
-    - qrLink
+      - name
     properties:
-      qrLink:
-        type: "string"
-        x-nullable: false
+      name:
+        type: string
+        minLength: 1
+      address:
+        $ref: "#/definitions/address"
 
   address:
-    type: "object"
     properties:
-      countryCode:
-        type: "string"
-        x-nullable: true
-      state:
-        type: "string"
-        x-nullable: true
-      province:
-        type: "string"
-        x-nullable: true
       street:
-        type: "string"
-        x-nullable: true
-      houseNo:
-        type: "string"
-        x-nullable: true
-      zipCode:
-        type: "string"
-        x-nullable: true
+        type: string
+        minLength: 1
       city:
-        type: "string"
-        x-nullable: true
-      streetType:
-        type: "string"
-        x-nullable: true
-      houseName:
-        type: "string"
-        x-nullable: true
-      nufloorNoll:
-        type: "string"
-        x-nullable: true
-      doorNo:
-        type: "string"
-        x-nullable: true
-      addressLine1:
-        type: "string"
-        x-nullable: true
-      addressLine2:
-        type: "string"
-        x-nullable: true
-      addressLine3:
-        type: "string"
-        x-nullable: true
-      postOfficeBox:
-        type: "string"
-        x-nullable: true
-
-  communicationPreference:
-    type: "object"
-    properties:
-      contactedByPhone:
-        type: boolean
-        x-nullable: true
-      contactedByLetter:
-        type: boolean
-        x-nullable: true
-      contactedByEmail:
-        type: boolean
-        x-nullable: true
-      contactedBySms:
-        type: boolean
-        x-nullable: true
-
-  _links:
-    type: "object"
-    properties:
-      self:
-        $ref: "#/definitions/self"
-      vehicles:
-        $ref: "#/definitions/vehicles"
-
-  self:
-    type: array
-    items:
-      type: object
-      properties:
-        href:
-          type: "string"
-
-  vehicles:
-    type: array
-    items:
-      type: object
-      properties:
-        href:
-          type: "string"
-
-  VehicleMasterDataResponse:
-    type: "array"
-    items:
-      $ref: "#/definitions/VehicleMasterDataResponseItem"
-
-  VehicleMasterDataResponseItem:
-    type: "object"
-    properties:
-      trustLevel:
+        type: string
+        minLength: 1
+      state:
+        type: string
+        minLength: 2
+        maxLength: 2
+        pattern: "^[A-Z]+$"
+      zipcode:
         type: integer
-        example: "1"
-      fin:
-          type: "string"
-          example: "WDD2040921A742220"
-          x-nullable: true
-      vin:
-        type: "string"
-        example: "WDD2040921A742220"
-        x-nullable: true
-      nst:
-        type: "string"
-        example: "201"
-        x-nullable: true
-      licensePlate:
-        type: "string"
-        example: "S70372VfB"
-        x-nullable: true
-      modelYearCode:
-        type: "string"
-        example: "805"
-        x-nullable: true
-      countOfSeats:
-        type: "string"
-        example: "5"
-        x-nullable: true
-      grossVehicleWeight:
-        required:
-        - "value"
-        - "unit"
-        properties:
-          value:
-            type: "string"
-            example: "2460"
-            x-nullable: true
-          unit:
-            type: "string"
-            example: "kg"
-            x-nullable: true
-        type: "object"
-      weightEmpty:
-        required:
-        - "value"
-        - "unit"
-        properties:
-          value:
-            type: "string"
-            example: "4300"
-            x-nullable: true
-          unit:
-            type: "string"
-            example: "kg"
-            x-nullable: true
-        type: "object"
-      changeYears:
-        type: "array"
-        items:
-          type: "object"
-          required:
-          - code
-          - origin
-          properties:
-            code:
-              type: "string"
-              example: "050"
-              x-nullable: true
-            origin:
-              type: "string"
-              example: "TECHNICAL"
-              x-nullable: true
-      technicalData:
-        type: "array"
-        items:
-          type: "object"
-          required:
-          - technicalDataType
-          - textValue
-          properties:
-            technicalDataType:
-              type: "string"
-              example: "FUEL_TYPE"
-              x-nullable: true
-            textValue:
-              type: "string"
-              example: "Diesel"
-              x-nullable: true
-      equipments:
-        type: "array"
-        items:
-          type: "object"
-          required:
-          - code
-          - origin
-          properties:
-            code:
-              type: "string"
-              example: "202B"
-              x-nullable: true
-            origin:
-              type: "string"
-              example: "TECHNICAL"
-              x-nullable: true
-      salesRelatedInformation:
-        properties:
-          baumuster:
-            required:
-            - "baumuster"
-            - "baumusterDescription"
-            properties:
-              baumuster:
-                type: "string"
-                x-nullable: true
-                example: "2040921"
-              baumusterDescription:
-                type: "string"
-                x-nullable: true
-                example: "C 230 KOMPRESSOR Limousine"
-            type: "object"
-          paint1:
-            required:
-            - "code"
-            - "description"
-            properties:
-              code:
-                type: "string"
-                x-nullable: true
-                example: "744"
-              description:
-                type: "string"
-                x-nullable: true
-                example: "brillantsilber metallic"
-            type: "object"
-          upholstery:
-            required:
-            - "code"
-            - "description"
-            properties:
-              code:
-                type: "string"
-                x-nullable: true
-                example: "258"
-              description:
-                type: "string"
-                x-nullable: true
-                example: "Leder 2 farbig schwarz / basaltgrau"
-            type: "object"
-          line:
-            required:
-            - "code"
-            - "description"
-            properties:
-              code:
-                type: "string"
-                x-nullable: true
-                example: "956"
-              description:
-                type: "string"
-                x-nullable: true
-                example: "Sport-Paket AMG Plus"
-            type: "object"
-          salesDataTimeStamp:
-            type: "string"
-            format: "date-time"
-            x-nullable: true
-            example: "2018-05-04T05:59:09Z"
-          finalInspectionDate:
-            type: "string"
-            format: "date-time"
-            x-nullable: true
-            example: "2000-01-17T00:00:00Z"
-          numberOfDoors:
-            type: "string"
-            x-nullable: true
-            example: "4"
-          weightCapacity:
-            required:
-            - "value"
-            - "unit"
-            properties:
-              value:
-                type: "string"
-                x-nullable: true
-                example: "505"
-              unit:
-                type: "string"
-                x-nullable: true
-                example: "kg"
-            type: "object"
-          powerEfficiencyClass:
-            required:
-            - "value"
-            properties:
-              value:
-                type: "string"
-                x-nullable: true
-                example: "E"
-            type: "object"
-          vehicleLength:
-            required:
-            - "value"
-            - "unit"
-            properties:
-              value:
-                type: "string"
-                x-nullable: true
-                example: "4393"
-              unit:
-                type: "string"
-                x-nullable: true
-                example: "mm"
-            type: "object"
-          vehicleWidth:
-            required:
-            - "value"
-            - "unit"
-            properties:
-              value:
-                type: "string"
-                x-nullable: true
-                example: "1786"
-              unit:
-                type: "string"
-                x-nullable: true
-                example: "mm"
-            type: "object"
-          vehicleHeight:
-            required:
-            - "value"
-            - "unit"
-            properties:
-              value:
-                type: "string"
-                x-nullable: true
-                example: "1557"
-              unit:
-                type: "string"
-                x-nullable: true
-                example: "mm"
+        minimum: 10000
+        maximum: 99999
 
-      technicalInformation:
-        properties:
-          technicalVehicleInformationTimeStamp:
-            type: "string"
-            format: "date-time"
-            x-nullable: true
-            example: "2018-05-02T08:38:10Z"
-          consumerCountry:
-            type: "string"
-            x-nullable: true
-            example: "DE"
-          active:
-            type: "boolean"
-            x-nullable: true
-            example: true
-          brand:
-            type: "string"
-            x-nullable: true
-            example: "mb"
-          baumuster:
-            type: "string"
-            x-nullable: true
-            example: "204092"
-          dateOfFirstRegistration:
-            type: "string"
-            x-nullable: true
-            example: "2000-02-29T00:00:00Z"
-            format: "date-time"
-          market:
-            type: "string"
-            x-nullable: true
-            example: "2XX"
-          productSeries:
-            type: "string"
-            x-nullable: true
-            example: "220"
-          salesDesignation:
-            type: "string"
-            x-nullable: true
-            example: ""
-          testVehicle:
-            type: "boolean"
-            example: false
-            x-nullable: true
-          serialNumbers:
-            type: "array"
+  pet-filters:
+    - name: tags
+      in: query
+      description: Filters pets by one or more tags
+      required: false
+      type: array
+      items:
+        type: string
+      uniqueItems: true
+      collectionFormat: csv
+    - name: type
+      in: query
+      description: Filters pets by type (dog, cat, or bird)
+      required: false
+      type: string
+      enum: [cat, dog, bird]
+    - name: age
+      in: query
+      description: Filters pets by age
+      required: false
+      type: integer
+    - name: dob
+      in: query
+      description: Filters pets by date of birth
+      required: false
+      type: string
+      format: date
+    - name: address.city
+      in: query
+      description: Filters pets by city
+      required: false
+      type: string
+    - name: address.state
+      in: query
+      description: Filters pets by state
+      required: false
+      type: string
+    - name: address.zipcode
+      in: query
+      description: Filters pets by zip code
+      required: false
+      type: integer
+    - name: vet.name
+      in: query
+      description: Filters pets by veterinarian name
+      required: false
+      type: string
+    - name: vet.address.city
+      in: query
+      description: Filters pets by veterinarian city
+      required: false
+      type: string
+    - name: vet.address.state
+      in: query
+      description: Filters pets by veterinarian state
+      required: false
+      type: string
+    - name: vet.address.zipcode
+      in: query
+      description: Filters pets by veterinarian zip code
+      required: false
+      type: integer
+
+parameters:
+  petName:
+    name: petName
+    in: path
+    description: Name of the pet
+    required: true
+    type: string
+
+paths:
+  /pets:
+    get:
+      description: Returns all pets, optionally filtered by one or more criteria
+      operationId: findPets
+      parameters:
+        $ref: '#/definitions/pet-filters'
+      responses:
+        default:
+          description: Returns the matching pets
+          schema:
+            type: array
             items:
-              type: "object"
-              required:
-              - serialNumberDataType
-              - textValue
-              properties:
-                serialNumberDataType:
-                  type: "string"
-                  x-nullable: true
-                  example: "CRIN"
-                textValue:
-                  type: "string"
-                  x-nullable: true
-                  example: "CRIN1512"
-          controlUnits:
-            type: "array"
+              $ref: "#/definitions/pet"
+          headers:
+            last-modified:
+              type: string
+              description: The date/time that a pet was last modified
+
+    delete:
+      description: Deletes all pets, optionally filtered by one or more criteria
+      operationId: deletePets
+      parameters:
+        $ref: '#/definitions/pet-filters'
+      responses:
+        default:
+          description: Returns the pets that were deleted
+          schema:
+            type: array
             items:
-              type: "object"
-              required:
-              - codingId
-              - hwNumber
-              - typeOf
-              - installedSoftware
+              $ref: "#/definitions/pet"
+
+    post:
+      description: Creates a new pet in the store
+      operationId: addPet
+      parameters:
+        - name: pet
+          in: body
+          description: The pet to add to the store
+          required: true
+          schema:
+            $ref: "#/definitions/pet"
+      responses:
+        201:
+          description: Returns the newly-added pet
+          schema:
+            $ref: "#/definitions/pet"
+          headers:
+            Location:
+              type: string
+              description: The URL of the newly-added pet
+
+  /pets/{petName}:
+    parameters:
+      - $ref: "#/parameters/petName"
+
+    get:
+      description: Returns a pet by name
+      operationId: findPetByName
+      responses:
+        default:
+          description: Returns the pet data
+          schema:
+            $ref: "#/definitions/pet"
+          headers:
+            last-modified:
+              type: string
+              description: The date/time that the pet was last modified
+
+    delete:
+      description: Deletes a single pet based on the name supplied
+      operationId: deletePet
+      responses:
+        default:
+          description: Returns the pet that was deleted
+          schema:
+            $ref: "#/definitions/pet"
+
+    patch:
+      description: Updates a pet by name
+      parameters:
+        - name: pet
+          in: body
+          description: The updated pet info
+          required: true
+          schema:
+            $ref: "#/definitions/pet"
+      responses:
+        default:
+          description: Returns the updated pet data
+          schema:
+            $ref: "#/definitions/pet"
+
+  /pets/{petName}/photos:
+    parameters:
+      - $ref: "#/parameters/petName"
+
+    post:
+      description: Upload a new pet photo
+      operationId: addPetPhoto
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: id
+          in: formData
+          description: The photo ID (generated automatically)
+          type: integer
+          format: int32
+          minimum: 1
+        - name: label
+          in: formData
+          description: A label for the photo
+          required: true
+          type: string
+          minLength: 1
+        - name: description
+          in: formData
+          description: An optional description of the photo
+          type: string
+        - name: photo
+          in: formData
+          description: The pet photo
+          required: true
+          type: file
+          minLength: 1
+          maxLength: 5000000  # ~5MB
+      responses:
+        default:
+          description: Returns the photo information
+          schema:
+            properties:
+              id:
+                type: integer
+                format: int32
+                description: The auto-generated photo ID
+              label:
+                type: string
+              description:
+                type: string
+              photo:
+                type: object
+                description: Information about the photo (size, file name, etc.)
+          headers:
+            Location:
+              type: string
+              description: The URL of the newly-added photo
+
+    get:
+      description: Get a list of the photos for a pet
+      responses:
+        200:
+          description: Returns the list of photos
+          schema:
+            type: array
+            items:
               properties:
-                codingId:
-                  type: "string"
-                  x-nullable: true
-                  example: "DEFAULT_CODING_ID"
-                hwNumber:
-                  type: "string"
-                  x-nullable: true
-                  example: "0044465240"
-                typeOf:
-                  type: "string"
-                  x-nullable: true
-                  example: "UNDEFINED"
-                installedSoftware:
-                  type: "array"
-                  items:
-                    type: "object"
-                    required:
-                    - swNumber
-                    properties:
-                      swNumber:
-                        type: "string"
-                        x-nullable: true
-                        example: "0134489002"
-          engineId:
-            type: "string"
-            x-nullable: true
-            example: "00000000000"
-          productGroupIndication:
-            type: "string"
-            x-nullable: true
-            example: "P"
-        type: "object"
-  UserPinChangeRequestBody:
-    required:
-      - "currentPin"
-      - "newPin"
-    properties:
-      currentPin:
-        type: "string"
-      newPin:
-        type: "string"
-  UserPinCreateRequestBody:
-    required:
-      - "newPin"
-    properties:
-      newPin:
-        type: "string"
+                id:
+                  type: integer
+                  format: int32
+                  description: The auto-generated photo ID
+                label:
+                  type: string
+                description:
+                  type: string
+                photo:
+                  type: object
+                  description: Information about the photo (size, file name, etc.)
 
-  CountryInformation:
-    type: object
-    description: 'Country information.'
-    properties:
-      countryCode:
-        type: string
-        pattern: '^[A-Z]{2,2}(-[A-Z]{2,2})?$'
-        description: 'The country code. Format: [ISO 3166 ALPHA2]. Valid examples: DE, GB, AE-AZ.'
-      countryName:
-        type: string
-        maxLength: 100
-        minLength: 1
-        description: 'The country name.'
-      instance:
-        type: string
-        minLength: 1
-        description: 'Describes in which connect me instance (ECE, CN, NDC) the country is operated. Every instance has an own persistence of customer, contract and vehicle data.
-                      For example: Chinese customers are only persisted in the CN instance and are not known to other instances.
-                      For a customer country change this means, that a customer cannot move from countries in one instance to a country from another instance and keep his data.
-                      This information is needed to inform the customer, that he will need to create a new account if he changes his country to another instance.'
-      legalRegion:
-        type: string
-        minLength: 1
-        description: 'Describes which legal region is responsible for the connect me contracts.
-                     Customer contracts are only valid for one legal region. If a country change also changes the legal region,
-                     the customers needs to be informed and the contracts need to be confirmed again.'
+  /pets/{petName}/photos/{id}:
+    parameters:
+      - $ref: "#/parameters/petName"
+      - name: id
+        in: path
+        description: The ID of the photo
+        required: true
+        type: integer
+        format: int32
 
-  OutletOpeningTimeWeekdays:
-    type: object
-    properties:
-      MONDAY:
-        type: object
-        $ref: "#/definitions/OutletOpeningTimeWeekdayInfo"
-      TUESDAY:
-        type: object
-        $ref: "#/definitions/OutletOpeningTimeWeekdayInfo"
-      WEDNESDAY:
-        type: object
-        $ref: "#/definitions/OutletOpeningTimeWeekdayInfo"
-      THURSDAY:
-        type: object
-        $ref: "#/definitions/OutletOpeningTimeWeekdayInfo"
-      FRIDAY:
-        type: object
-        $ref: "#/definitions/OutletOpeningTimeWeekdayInfo"
-      SATURDAY:
-        type: object
-        $ref: "#/definitions/OutletOpeningTimeWeekdayInfo"
-      SUNDAY:
-        type: object
-        $ref: "#/definitions/OutletOpeningTimeWeekdayInfo"
-    xml:
-      name: weekdays
-  OutletOpeningTimeWeekdayInfo:
-    type: object
-    properties:
-      status:
-        type: string
-        description: status (OPEN or CLOSED)
-        enum:
-        - OPEN
-        - CLOSED
-      periods:
-        type: array
-        description: time periods
-        items:
-          $ref: "#/definitions/OutletOpeningTimePeriods"
-  OutletOpeningTimePeriods:
-    type: object
-    required:
-    - from
-    - until
-    properties:
-      from:
-        type: string
-        description: from
-      until:
-        type: string
-        description: until
-    xml:
-      name: periods
-  principal:
-    type: object
-    properties:
-      jwt:
-        type: string
-      ciamID:
-        type: string
+    get:
+      description: Gets a pet photo
+      operationId: getPetPhoto
+      produces:
+        - image/jpeg
+        - image/gif
+        - image/png
+        - image/bmp
+      responses:
+        default:
+          description: Returns the pet photo
+          schema:
+            type: file
+
+    delete:
+      description: Deletes a pet photo
+      operationId: deletePetPhoto
+      responses:
+        default:
+          description: The photo was deleted successfully
