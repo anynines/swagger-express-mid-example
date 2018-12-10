@@ -5,3 +5,11 @@ coverage/
 .DS_Store
 *.log
 .vscode/
+
+todo*
+old.*
+.old.*
+.env
+
+# MongoDB folder
+data/
