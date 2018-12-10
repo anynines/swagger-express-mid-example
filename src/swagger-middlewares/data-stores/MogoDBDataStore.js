@@ -11,23 +11,18 @@ class MongoDBDataStore extends DataStore {
 
     try {
       const dbCollection = db.get(collection);
-      console.log('-------------------- collection', collection);
 
       dbCollection
         .find()
         .then((data) => {
-          console.log('zzzzzzzzzzzzzzZZZZZZZZZZZ data', data);
           const resource = new Resource(collection, data);
-          console.log('zzzzzzzzzzzzzzZZZZZZZZZZZ resource', resource);
 
           callback(null, resource);
         })
         .catch((e) => {
-          console.log('ZZZZZZZZZZZZZZZZZZZZZZZ', e);
           callback(e);
         });
     } catch (e) {
-      console.log('YYYYYYYYYYYYYYYYYYY', e);
       callback(e);
     }
   }

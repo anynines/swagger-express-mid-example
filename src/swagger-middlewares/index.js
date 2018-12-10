@@ -1,18 +1,7 @@
 import path from 'path';
-import mongoDB from '../db/mongoDB';
-import MongoDBDataStore from './data-stores/MogoDBDataStore';
 
-const swaggerFile = () => path.join(__dirname, '../specs/pets.yaml');
-
-const DATA_STORE = () => {
-  let instance;
-
-  if (instance) {
-    return instance;
-  }
-  instance = new MongoDBDataStore(mongoDB);
-  return instance;
-};
+// const swaggerFile = () => path.join(__dirname, '../specs/pets.yaml');
+const swaggerFile = () => path.join(__dirname, '../specs/daimler-specs.yaml');
 
 const middlewares = middleware => [
   middleware.metadata(),
@@ -20,7 +9,7 @@ const middlewares = middleware => [
   middleware.files(),
   middleware.parseRequest(),
   middleware.validateRequest(),
-  middleware.mock(DATA_STORE()),
+  middleware.mock(),
 ];
 
 const errorRouter = (err, _req, res, _next) => {
