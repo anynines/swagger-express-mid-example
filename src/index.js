@@ -1,6 +1,7 @@
 import express from 'express';
 import { Middleware } from 'swagger-express-middleware';
 import { errorRouter, middlewares, swaggerFile } from './swagger-middlewares';
+// import { configureRouter } from './configure';
 import { mongoDBRouter } from './db/mongoDB';
 
 const app = express();
@@ -12,9 +13,7 @@ middleware.init(swaggerFile(), (_err) => {
   app.use(mongoDBRouter);
 
   // Add custom middleware
-  // app.get('/pets/Troll', (_req, res, _next) => {
-  //   res.status(200).json([{ key: 'my value: troll' }]);
-  // });
+  // app.post('/configure', configureRouter);
 
   // Defines used middlewares from 'swagger-middleware-express'
   app.use([...(middlewares(middleware))]);

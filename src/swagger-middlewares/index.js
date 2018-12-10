@@ -16,9 +16,9 @@ const DATA_STORE = () => {
 
 const middlewares = middleware => [
   middleware.metadata(),
+  middleware.CORS(),
   middleware.files(),
   middleware.parseRequest(),
-  middleware.CORS(),
   middleware.validateRequest(),
   middleware.mock(DATA_STORE()),
 ];
